@@ -351,6 +351,109 @@ td.cheapest-cell {
   color: #4a9eff;
   font-weight: 600;
 }
+
+.payment-method-info {
+  background: #1a1d27;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border: 1px solid #2a2d3a;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.payment-method-info label {
+  color: #aaa;
+  font-size: 0.85rem;
+}
+.payment-method-info .method-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.payment-method-info input[type="radio"] {
+  accent-color: #4a9eff;
+  width: 16px;
+  height: 16px;
+}
+.payment-method-info .method-label {
+  color: #fff;
+  font-size: 0.95rem;
+}
+.payment-method-info .method-desc {
+  color: #888;
+  font-size: 0.8rem;
+  margin-left: 8px;
+}
+
+.payment-comparison {
+  background: #1a1d27;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid #2a2d3a;
+}
+.payment-comparison h3 {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.payment-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.payment-method-card {
+  background: #12141c;
+  border-radius: 10px;
+  padding: 16px;
+  border: 2px solid #2a2d3a;
+}
+.payment-method-card.annuity {
+  border-color: #4a9eff;
+}
+.payment-method-card.equal-principal {
+  border-color: #ff9800;
+}
+.payment-method-card h4 {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+.payment-method-card.annuity h4 { color: #4a9eff; }
+.payment-method-card.equal-principal h4 { color: #ff9800; }
+.payment-method-card .stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #2a2d3a;
+  font-size: 0.85rem;
+}
+.payment-method-card .stat-row:last-child {
+  border-bottom: none;
+}
+.payment-method-card .stat-label {
+  color: #888;
+}
+.payment-method-card .stat-value {
+  color: #fff;
+  font-weight: 600;
+}
+.payment-method-card .savings-banner {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.savings-banner.interest-saved {
+  background: #00c85322;
+  color: #00c853;
+}
 </style>
 </head>
 <body>
@@ -374,6 +477,20 @@ td.cheapest-cell {
       <li><strong>12-Month Euribor:</strong> Rate resets every 12 months — less frequent adjustments</li>
     </ul>
     <p id="dataInfo">Data source: European Central Bank SDMX API</p>
+  </div>
+
+  <div class="payment-method-info">
+    <label style="color: #fff; font-weight: 600;">Payment Method:</label>
+    <label class="method-option">
+      <input type="radio" name="paymentMethod" value="annuity" checked onchange="calculate()">
+      <span class="method-label">Annuity</span>
+      <span class="method-desc">(Equal monthly payments)</span>
+    </label>
+    <label class="method-option">
+      <input type="radio" name="paymentMethod" value="equalPrincipal" onchange="calculate()">
+      <span class="method-label">Equal Principal</span>
+      <span class="method-desc">(Fixed principal, decreasing total payment)</span>
+    </label>
   </div>
 
   <div class="input-section">
@@ -410,8 +527,55 @@ td.cheapest-cell {
     <button onclick="calculate()">Calculate</button>
   </div>
 
+  <div id="paymentComparison" class="payment-comparison" style="display:none;">
+    <h3>Payment Method Comparison — <span id="paymentCompTenor">6M Euribor</span></h3>
+    <div class="payment-comparison-grid">
+      <div class="payment-method-card annuity">
+        <h4>Annuity (Equal Payments)</h4>
+        <div class="stat-row">
+          <span class="stat-label">First Monthly Payment</span>
+          <span class="stat-value" id="annuityFirstPayment">€0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Last Monthly Payment</span>
+          <span class="stat-value" id="annuityLastPayment">€0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total Interest</span>
+          <span class="stat-value" id="annuityTotalInterest">€0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total Paid</span>
+          <span class="stat-value" id="annuityTotalPaid">€0</span>
+        </div>
+      </div>
+      <div class="payment-method-card equal-principal">
+        <h4>Equal Principal</h4>
+        <div class="stat-row">
+          <span class="stat-label">First Monthly Payment</span>
+          <span class="stat-value" id="epFirstPayment">€0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Last Monthly Payment</span>
+          <span class="stat-value" id="epLastPayment">€0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total Interest</span>
+          <span class="stat-value" id="epTotalInterest">€0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total Paid</span>
+          <span class="stat-value" id="epTotalPaid">€0</span>
+        </div>
+        <div class="savings-banner interest-saved" id="epSavings">
+          Save €X in interest vs annuity
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="costBreakdown" class="cost-breakdown" style="display:none;">
-    <h2>Cost Breakdown — <span id="simCount">0</span> Simulations Averaged</h2>
+    <h2 id="costBreakdownTitle">Cost Breakdown — <span id="simCount">0</span></h2>
     <div class="cost-grid">
       <div class="cost-item">
         <div class="label">Loan Principal</div>
@@ -444,21 +608,6 @@ td.cheapest-cell {
         <div class="subvalue">vs most expensive option</div>
       </div>
     </div>
-  </div>
-
-  <div id="resetSchedule" class="reset-schedule" style="display:none;">
-    <h3>Rate Reset Schedule — <span id="resetTenor">6M Euribor</span></h3>
-    <table class="reset-table">
-      <thead>
-        <tr>
-          <th>Reset #</th>
-          <th>Date</th>
-          <th>Euribor Rate</th>
-          <th>Months at This Rate</th>
-        </tr>
-      </thead>
-      <tbody id="resetTableBody"></tbody>
-    </table>
   </div>
 
   <div id="comparisonBox" class="comparison-box" style="display:none;">
@@ -494,6 +643,21 @@ td.cheapest-cell {
   </div>
 
   <div id="summaryCards" class="summary-cards"></div>
+
+  <div id="resetSchedule" class="reset-schedule" style="display:none;">
+    <h3>Rate Reset Schedule — <span id="resetTenor">6M Euribor</span></h3>
+    <table class="reset-table">
+      <thead>
+        <tr>
+          <th>Reset #</th>
+          <th>Date</th>
+          <th>Euribor Rate</th>
+          <th>Months at This Rate</th>
+        </tr>
+      </thead>
+      <tbody id="resetTableBody"></tbody>
+    </table>
+  </div>
   
   <div id="tableWrapper" class="table-wrapper" style="display:none;">
     <h2>Monthly Breakdown — Total Interest Paid by Start Date</h2>
@@ -518,6 +682,7 @@ td.cheapest-cell {
 
   <p class="methodology">
     Calculation uses annuity formula with rate resets at each tenor interval. Bank margin is added to the Euribor rate.<br>
+    <strong>Annuity:</strong> Equal monthly payments throughout the loan term. <strong>Equal Principal:</strong> Fixed principal payment each month, total payment decreases over time.<br>
     This is a simulation tool — actual costs depend on your specific contract terms.<br>
     Euribor data from: https://euriborrates.com/historical-euribor
   </p>
@@ -535,18 +700,23 @@ function setMode(mode) {
   
   const startDateGroup = document.getElementById('startDateGroup');
   const simWindowGroup = document.getElementById('simWindowGroup');
+  const costBreakdownTitle = document.getElementById('costBreakdownTitle');
   
   if (mode === 'specific') {
     startDateGroup.style.display = 'flex';
     simWindowGroup.style.display = 'none';
-    document.getElementById('costBreakdown').querySelector('h2').innerHTML = 'Cost Breakdown for Your Loan';
+    costBreakdownTitle.innerHTML = 'Cost Breakdown for <span id="simCount">Your Loan</span>';
   } else {
     startDateGroup.style.display = 'none';
     simWindowGroup.style.display = 'flex';
-    document.getElementById('costBreakdown').querySelector('h2').innerHTML = 'Cost Breakdown — <span id="simCount">0</span> Simulations Averaged';
+    costBreakdownTitle.innerHTML = 'Cost Breakdown — <span id="simCount">0</span> Simulations Averaged';
   }
   
   calculate();
+}
+
+function getPaymentMethod() {
+  return document.querySelector('input[name="paymentMethod"]:checked').value;
 }
 
 async function fetchEuriborData() {
@@ -585,7 +755,6 @@ async function fetchEuriborData() {
     statusEl.className = 'status-message success';
     updateDataInfo();
     
-    // Set default start date to earliest available data
     const dates = getSortedDates();
     if (dates.length > 0) {
       document.getElementById('loanStartMonth').value = dates[0];
@@ -634,17 +803,21 @@ function formatCurrency(val) {
   return '€' + Math.round(val).toLocaleString('en-US');
 }
 
-function calculateLoanInterest(loanAmount, loanTermMonths, startDate, tenorMonths, tenorIndex, bankMargin) {
+function calculateLoanInterest(loanAmount, loanTermMonths, startDate, tenorMonths, tenorIndex, bankMargin, paymentMethod) {
   let balance = loanAmount;
   let totalInterest = 0;
   let euriborInterest = 0;
   let marginInterest = 0;
   let firstRate = null;
   let resetSchedule = [];
+  let firstPayment = null;
+  let lastPayment = 0;
 
   let currentResetMonth = 0;
   let currentRate = null;
   let monthsAtCurrentRate = 0;
+
+  const fixedPrincipalPayment = loanAmount / loanTermMonths;
 
   for (let month = 0; month < loanTermMonths && balance > 0; month++) {
     const currentDate = addMonths(startDate, month);
@@ -660,7 +833,6 @@ function calculateLoanInterest(loanAmount, loanTermMonths, startDate, tenorMonth
     const euriborRate = getRate(rateDate, tenorIndex);
     if (firstRate === null) firstRate = euriborRate;
     
-    // Track reset schedule
     const resetIndex = Math.floor(month / tenorMonths);
     if (resetIndex > currentResetMonth || month === 0) {
       if (currentRate !== null) {
@@ -683,19 +855,30 @@ function calculateLoanInterest(loanAmount, loanTermMonths, startDate, tenorMonth
     const monthlyEuriborRate = effectiveEuribor / 100 / 12;
     const monthlyMarginRate = bankMargin / 100 / 12;
 
-    const remainingMonths = loanTermMonths - month;
-    let monthlyPayment;
-    if (monthlyRate === 0) {
-      monthlyPayment = balance / remainingMonths;
+    let interestPortion, euriborPortion, marginPortion, principalPortion, monthlyPayment;
+
+    if (paymentMethod === 'annuity') {
+      const remainingMonths = loanTermMonths - month;
+      if (monthlyRate === 0) {
+        monthlyPayment = balance / remainingMonths;
+      } else {
+        monthlyPayment = balance * (monthlyRate * Math.pow(1 + monthlyRate, remainingMonths)) /
+                          (Math.pow(1 + monthlyRate, remainingMonths) - 1);
+      }
+      interestPortion = balance * monthlyRate;
+      euriborPortion = balance * monthlyEuriborRate;
+      marginPortion = balance * monthlyMarginRate;
+      principalPortion = monthlyPayment - interestPortion;
     } else {
-      monthlyPayment = balance * (monthlyRate * Math.pow(1 + monthlyRate, remainingMonths)) /
-                        (Math.pow(1 + monthlyRate, remainingMonths) - 1);
+      principalPortion = Math.min(fixedPrincipalPayment, balance);
+      interestPortion = balance * monthlyRate;
+      euriborPortion = balance * monthlyEuriborRate;
+      marginPortion = balance * monthlyMarginRate;
+      monthlyPayment = principalPortion + interestPortion;
     }
 
-    const interestPortion = balance * monthlyRate;
-    const euriborPortion = balance * monthlyEuriborRate;
-    const marginPortion = balance * monthlyMarginRate;
-    const principalPortion = monthlyPayment - interestPortion;
+    if (firstPayment === null) firstPayment = monthlyPayment;
+    lastPayment = monthlyPayment;
 
     totalInterest += interestPortion;
     euriborInterest += euriborPortion;
@@ -703,7 +886,6 @@ function calculateLoanInterest(loanAmount, loanTermMonths, startDate, tenorMonth
     balance -= principalPortion;
   }
   
-  // Add final reset period
   if (currentRate !== null) {
     resetSchedule.push({
       resetNumber: currentResetMonth + 1,
@@ -713,7 +895,15 @@ function calculateLoanInterest(loanAmount, loanTermMonths, startDate, tenorMonth
     });
   }
 
-  return { totalInterest, euriborInterest, marginInterest, firstRate, resetSchedule };
+  return { 
+    totalInterest, 
+    euriborInterest, 
+    marginInterest, 
+    firstRate, 
+    resetSchedule,
+    firstPayment,
+    lastPayment
+  };
 }
 
 function calculate() {
@@ -726,6 +916,7 @@ function calculate() {
   const loanTermYears = parseInt(document.getElementById('loanTerm').value);
   const bankMargin = parseFloat(document.getElementById('bankMargin').value);
   const loanTermMonths = loanTermYears * 12;
+  const paymentMethod = getPaymentMethod();
 
   const allDates = getSortedDates();
   if (allDates.length === 0) {
@@ -735,25 +926,24 @@ function calculate() {
   }
 
   if (currentMode === 'specific') {
-    calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates);
+    calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates, paymentMethod);
   } else {
-    calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates);
+    calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates, paymentMethod);
   }
 }
 
-function calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates) {
+function calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates, paymentMethod) {
   const startDate = document.getElementById('loanStartMonth').value;
   
-  // Validate start date
   if (!euriborData[startDate] && allDates.filter(d => d <= startDate).length === 0) {
     document.getElementById('statusMessage').textContent = 'Start date is before available data. Using earliest available date.';
     document.getElementById('statusMessage').className = 'status-message error';
     return;
   }
 
-  const r3m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 3, 0, bankMargin);
-  const r6m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 6, 1, bankMargin);
-  const r12m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 12, 2, bankMargin);
+  const r3m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 3, 0, bankMargin, paymentMethod);
+  const r6m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 6, 1, bankMargin, paymentMethod);
+  const r12m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 12, 2, bankMargin, paymentMethod);
 
   const interests = [r3m.totalInterest, r6m.totalInterest, r12m.totalInterest];
   const minInterest = Math.min(...interests);
@@ -763,7 +953,28 @@ function calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates)
   const tenorLabels = ['3-Month Euribor', '6-Month Euribor', '12-Month Euribor'];
   const tenorShort = ['3M', '6M', '12M'];
 
-  // Update cost breakdown box
+  const resultsForComparison = [r3m, r6m, r12m];
+  const cheapestResults = resultsForComparison[cheapestIdx];
+  
+  const r6mAnnuity = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 6, 1, bankMargin, 'annuity');
+  const r6mEP = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 6, 1, bankMargin, 'equalPrincipal');
+  
+  document.getElementById('paymentComparison').style.display = 'block';
+  document.getElementById('paymentCompTenor').textContent = '6M Euribor';
+  
+  document.getElementById('annuityFirstPayment').textContent = formatCurrency(r6mAnnuity.firstPayment);
+  document.getElementById('annuityLastPayment').textContent = formatCurrency(r6mAnnuity.lastPayment);
+  document.getElementById('annuityTotalInterest').textContent = formatCurrency(r6mAnnuity.totalInterest);
+  document.getElementById('annuityTotalPaid').textContent = formatCurrency(loanAmount + r6mAnnuity.totalInterest);
+  
+  document.getElementById('epFirstPayment').textContent = formatCurrency(r6mEP.firstPayment);
+  document.getElementById('epLastPayment').textContent = formatCurrency(r6mEP.lastPayment);
+  document.getElementById('epTotalInterest').textContent = formatCurrency(r6mEP.totalInterest);
+  document.getElementById('epTotalPaid').textContent = formatCurrency(loanAmount + r6mEP.totalInterest);
+  
+  const interestSaved = r6mAnnuity.totalInterest - r6mEP.totalInterest;
+  document.getElementById('epSavings').textContent = `Save ${formatCurrency(interestSaved)} in interest vs annuity`;
+
   document.getElementById('costBreakdown').style.display = 'block';
   document.getElementById('simCount').textContent = startDate;
   document.getElementById('principalValue').textContent = formatCurrency(loanAmount);
@@ -781,7 +992,6 @@ function calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates)
   document.getElementById('marginPercent').textContent = ((marginInterests[cheapestIdx] / minInterest) * 100).toFixed(1) + '% of interest';
   document.getElementById('potentialSavings').textContent = formatCurrency(maxInterest - minInterest);
 
-  // Comparison box
   document.getElementById('comparisonBox').style.display = 'block';
   
   const totalPaidRow = document.getElementById('totalPaidRow');
@@ -815,21 +1025,25 @@ function calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates)
     return `<div class="tenor-value ${isCheapest ? 'cheapest' : ''}"><div class="total">${isCheapest ? 'CHEAPEST' : 'Not cheapest'}</div></div>`;
   }).join('');
 
-  // Summary Cards
   const summaryDiv = document.getElementById('summaryCards');
   summaryDiv.innerHTML = '';
+  
+  const paymentMethodLabel = paymentMethod === 'annuity' ? 'Annuity' : 'Equal Principal';
+  
   interests.forEach((interest, idx) => {
     const isCheapest = idx === cheapestIdx;
     const diff = interest - minInterest;
+    const result = resultsForComparison[idx];
     const card = document.createElement('div');
     card.className = `summary-card ${isCheapest ? 'cheapest' : ''}`;
     card.innerHTML = `
-      <div class="tenor">${tenorLabels[idx]}</div>
+      <div class="tenor">${tenorLabels[idx]} (${paymentMethodLabel})</div>
       <div class="total">${formatCurrency(interest)}</div>
       <div class="detail">Total interest over ${loanTermMonths / 12} years</div>
       <div class="detail">Total paid: ${formatCurrency(loanAmount + interest)}</div>
       <div class="detail">Euribor: ${formatCurrency(euriborInterests[idx])} | Margin: ${formatCurrency(marginInterests[idx])}</div>
-      <div class="detail">Starting rate: ${(idx === 0 ? r3m.firstRate : idx === 1 ? r6m.firstRate : r12m.firstRate).toFixed(2)}%</div>
+      <div class="detail">Starting rate: ${result.firstRate.toFixed(2)}%</div>
+      <div class="detail">First payment: ${formatCurrency(result.firstPayment)} → Last: ${formatCurrency(result.lastPayment)}</div>
       <div class="savings ${isCheapest ? 'neutral' : 'negative'}">
         ${isCheapest ? 'CHEAPEST OPTION' : `+${formatCurrency(diff)} more than cheapest`}
       </div>
@@ -837,9 +1051,8 @@ function calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates)
     summaryDiv.appendChild(card);
   });
 
-  // Reset Schedule (show for 6M by default or cheapest)
   const scheduleTenor = cheapestIdx === 0 ? 3 : cheapestIdx === 1 ? 6 : 12;
-  const scheduleData = cheapestIdx === 0 ? r3m : cheapestIdx === 1 ? r6m : r12m;
+  const scheduleData = cheapestResults;
   
   document.getElementById('resetSchedule').style.display = 'block';
   document.getElementById('resetTenor').textContent = tenorLabels[cheapestIdx];
@@ -858,11 +1071,10 @@ function calculateSpecificLoan(loanAmount, loanTermMonths, bankMargin, allDates)
     resetBody.appendChild(tr);
   });
 
-  // Hide the big comparison table in specific mode
   document.getElementById('tableWrapper').style.display = 'none';
 }
 
-function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates) {
+function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates, paymentMethod) {
   const simWindow = parseInt(document.getElementById('simWindow').value);
   
   const latestDate = allDates[allDates.length - 1];
@@ -879,9 +1091,9 @@ function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates) {
     if (startDate > latestDate) break;
     if (!euriborData[startDate] && allDates.filter(d => d <= startDate).length === 0) continue;
 
-    const r3m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 3, 0, bankMargin);
-    const r6m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 6, 1, bankMargin);
-    const r12m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 12, 2, bankMargin);
+    const r3m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 3, 0, bankMargin, paymentMethod);
+    const r6m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 6, 1, bankMargin, paymentMethod);
+    const r12m = calculateLoanInterest(loanAmount, loanTermMonths, startDate, 12, 2, bankMargin, paymentMethod);
 
     const interests = [r3m.totalInterest, r6m.totalInterest, r12m.totalInterest];
     const minInterest = Math.min(...interests);
@@ -909,7 +1121,6 @@ function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates) {
     count++;
   }
 
-  // Calculate averages
   const avgTotalInterest = sumTotalInterest.map(s => s / count);
   const avgEuriborInterest = sumEuriborInterest.map(s => s / count);
   const avgMarginInterest = sumMarginInterest.map(s => s / count);
@@ -918,14 +1129,14 @@ function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates) {
   const cheapestIdx = avgTotalInterest.indexOf(minAvgInterest);
   const tenorLabels = ['3-Month Euribor', '6-Month Euribor', '12-Month Euribor'];
 
-  // Win counts
   const winCounts = [0, 0, 0];
   results.forEach(r => {
     const minI = Math.min(...r.interests);
     r.interests.forEach((v, idx) => { if (v === minI) winCounts[idx]++; });
   });
 
-  // Update cost breakdown box
+  document.getElementById('paymentComparison').style.display = 'none';
+
   document.getElementById('costBreakdown').style.display = 'block';
   document.getElementById('simCount').textContent = count;
   document.getElementById('principalValue').textContent = formatCurrency(loanAmount);
@@ -939,7 +1150,6 @@ function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates) {
   document.getElementById('marginPercent').textContent = ((avgMarginInterest[cheapestIdx] / minAvgInterest) * 100).toFixed(1) + '% of interest';
   document.getElementById('potentialSavings').textContent = formatCurrency(maxAvgInterest - minAvgInterest);
 
-  // Update comparison box
   document.getElementById('comparisonBox').style.display = 'block';
   
   const totalPaidRow = document.getElementById('totalPaidRow');
@@ -973,16 +1183,18 @@ function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates) {
     return `<div class="tenor-value ${isCheapest ? 'cheapest' : ''}"><div class="total">${wins} / ${count}</div><div class="interest">${(wins / count * 100).toFixed(1)}%</div></div>`;
   }).join('');
 
-  // Summary Cards
   const summaryDiv = document.getElementById('summaryCards');
   summaryDiv.innerHTML = '';
+  
+  const paymentMethodLabel = paymentMethod === 'annuity' ? 'Annuity' : 'Equal Principal';
+  
   avgTotalInterest.forEach((avg, idx) => {
     const isCheapest = idx === cheapestIdx;
     const diff = avg - minAvgInterest;
     const card = document.createElement('div');
     card.className = `summary-card ${isCheapest ? 'cheapest' : ''}`;
     card.innerHTML = `
-      <div class="tenor">${tenorLabels[idx]}</div>
+      <div class="tenor">${tenorLabels[idx]} (${paymentMethodLabel})</div>
       <div class="total">${formatCurrency(avg)}</div>
       <div class="detail">Avg total interest across ${count} simulations</div>
       <div class="detail">Total paid: ${formatCurrency(loanAmount + avg)}</div>
@@ -995,7 +1207,6 @@ function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates) {
     summaryDiv.appendChild(card);
   });
 
-  // Table
   const tableWrapper = document.getElementById('tableWrapper');
   tableWrapper.style.display = 'block';
   const tbody = document.getElementById('tableBody');
@@ -1018,7 +1229,6 @@ function calculateComparison(loanAmount, loanTermMonths, bankMargin, allDates) {
     tbody.appendChild(tr);
   });
   
-  // Hide reset schedule in comparison mode
   document.getElementById('resetSchedule').style.display = 'none';
 }
 
